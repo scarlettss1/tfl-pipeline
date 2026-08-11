@@ -19,3 +19,27 @@ CREATE TABLE IF NOT EXISTS raw_snapshots (
     source          TEXT NOT NULL DEFAULT 'tfl_line_status_tube',
     raw_response    JSONB NOT NULL
 );
+
+
+-- Cleaned/transformed table: one row per line per snapshot, with only
+-- the fields useful for querying trends over time. Derived entirely
+-- from raw_snapshots - can be dropped and rebuilt from raw data if the
+-- transform logic changes, since raw_snapshots is the permanent record.
+--
+-- reason and category are nullable, since a line with "Good Service"
+-- has no disruption and therefore no reason/category in the source data.
+--
+-- Deliberately excluded: validityPeriods (fromDate/toDate/isNow) - this
+-- is a nested list-within-a-list in the source JSON and doesn't fit
+-- cleanly as flat columns; revisit if a real need for it comes up.
+CREATE TABLE IF NOT EXISTS clean_line_status (
+    snapshot_id                 INTEGER NOT NULL REFERENCES raw_snapshots(id),
+    line_id                     TEXT NOT NULL,
+    line_name                   TEXT NOT NULL,
+    status_severity              INT NOT NULL,
+    status_severity_description TEXT NOT NULL,
+    reason                      TEXT,
+    category                    TEXT,
+
+    PRIMARY KEY (snapshot_id, line_id)
+);
