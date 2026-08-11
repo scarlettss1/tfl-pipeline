@@ -54,7 +54,8 @@ cur = conn.cursor()
 try:
     cur.execute(
         "INSERT INTO raw_snapshots (raw_response) VALUES (%s)",
-        (json.dumps(data),)
+        (json.dumps(data),) # Convert Python object to a JSON-formatted string, since psycopg2
+                            # can't insert a raw Python list/dict into a JSONB column directly
     )
     conn.commit()
     print("Snapshot saved!")
