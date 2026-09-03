@@ -4,12 +4,12 @@ create_tables.py
 One-time setup script for the TfL pipeline project.
 
 Creates all tables defined in sql/schema.sql inside the 'tfl_pipeline'
-database. Currently this is just 'raw_snapshots', the landing table for
-unprocessed TfL API responses.
+database: 'raw_snapshots', the landing table for unprocessed TfL API
+responses, and 'clean_line_status', the transformed table derived from it.
 
 Safe to run more than once: schema.sql uses CREATE TABLE IF NOT EXISTS,
 so re-running this script won't error or wipe existing data if the
-table already exists.
+tables already exist.
 
 Prerequisites:
 - Docker container 'test-postgres' must be running
