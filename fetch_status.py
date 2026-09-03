@@ -6,7 +6,7 @@ and stores the raw JSON response as a new row in raw_snapshots.
 
 Meant to be run repeatedly (e.g. every 10-15 minutes via a scheduler),
 building up a time series of Tube line status over time. Each run adds
-one new row - it never updates or deletes existing rows.
+one new row, it never updates or deletes existing rows.
 
 Prerequisites:
 - Docker container 'test-postgres' must be running
@@ -39,7 +39,7 @@ try:
                             # each dictionary representing one line's status info)
 except requests.exceptions.RequestException as e:
     print(f"Failed to fetch TfL data: {e}")
-    sys.exit(1)  # stop the script here - no point trying the DB step
+    sys.exit(1)  # stop the script here, no point trying the DB step
 
 # Step 2: Connect to the database and insert the raw response
 conn = psycopg2.connect(

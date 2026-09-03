@@ -27,7 +27,7 @@ import os
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
 
-# Unlike create_db.py, this script connects directly to 'tfl_pipeline' -
+# Unlike create_db.py, this script connects directly to 'tfl_pipeline',
 # the tables we're creating live inside that database, not 'postgres'.
 conn = psycopg2.connect(
     host="localhost",
@@ -47,7 +47,7 @@ with open("sql/schema.sql", "r") as f:
     schema_sql = f.read()
 
 # Unlike CREATE DATABASE, CREATE TABLE runs fine inside a normal
-# transaction, so no autocommit is needed here - just a manual commit
+# transaction, so no autocommit is needed here, just a manual commit
 # once everything in schema.sql has executed successfully.
 cur.execute(schema_sql)
 conn.commit()

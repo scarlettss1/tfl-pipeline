@@ -4,7 +4,7 @@ create_db.py
 One-time setup script for the TfL pipeline project.
 
 Creates the 'tfl_pipeline' database inside the local Postgres container.
-This is meant to be run once, manually - not as part of the recurring
+This is meant to be run once manually, not as part of the recurring
 pipeline. Running it a second time will fail, since Postgres has no
 built-in "CREATE DATABASE IF NOT EXISTS".
 
@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
 
-# Connect to the default 'postgres' database first - a connection can't
+# Connect to the default 'postgres' database first, a connection can't
 # create the database it's connected to, so this has to target a
 # different, already-existing one.
 conn = psycopg2.connect(

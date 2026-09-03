@@ -1,10 +1,10 @@
 # TfL Tube Line Status Pipeline
 
-A data pipeline that polls Transport for London's Unified API for live Tube line status and builds up a historical record over time — data TfL itself doesn't publish, since the API only ever returns the *current* status.
+A data pipeline that polls Transport for London's Unified API for live Tube line status and builds up a historical record over time. Data TfL itself doesn't publish, since the API only ever returns the *current* status.
 
 ## Why this project exists
 
-This is a project built to demonstrate a real, defensible batch ETL pattern: raw ingestion, a transformation layer, and a clean, queryable dataset - the same shape used in production data pipelines, at a scale that's realistic to build and explain end to end. Every design decision below was made deliberately, based on inspecting the actual API response.
+This is a project built to demonstrate a real, defensible batch ETL pattern: raw ingestion, a transformation layer, and a clean, queryable dataset. The same shape used in production data pipelines, at a scale that's realistic to build and explain end to end. Every design decision below was made deliberately, based on inspecting the actual API response.
 
 ## How it works
 
@@ -19,15 +19,15 @@ TfL API → fetch_status.py → raw_snapshots (JSONB) → transform_status.py �
 
 ## Key design decisions
 
-**Raw and clean tables are kept separate.** `raw_snapshots` stores each API response exactly as received, in a `JSONB` column, and is never modified after insert. `clean_line_status` is derived entirely from it. This matters because the transform logic is the part most likely to have bugs or need revisiting - if a mistake is found in how fields are being extracted, the clean table can be dropped and rebuilt from `raw_snapshots` without having lost any original data. The raw table is the permanent source of truth, and the clean table is disposable and regenerable.
+**Raw and clean tables are kept separate.** `raw_snapshots` stores each API response exactly as received, in a `JSONB` column, and is never modified after insert. `clean_line_status` is derived entirely from it. This matters because the transform logic is the part most likely to have bugs or need revisiting, if a mistake is found in how fields are being extracted, the clean table can be dropped and rebuilt from `raw_snapshots` without having lost any original data. The raw table is the permanent source of truth, and the clean table is disposable and regenerable.
 
-**`clean_line_status` uses a composite primary key of `(snapshot_id, line_id)`.** A given line's `line_id` (e.g. `"central"`) is consistent across every snapshot — it repeats every single time the pipeline runs, so it can't uniquely identify a row on its own. `snapshot_id` alone isn't enough either, since one snapshot produces ~11 rows (one per line). Only the *combination* of which line and which specific snapshot it came from is guaranteed unique, which is what a composite key enforces. `snapshot_id` is also a foreign key referencing `raw_snapshots(id)`, so every clean row can be traced back to the exact raw API response it was derived from.
+**`clean_line_status` uses a composite primary key of `(snapshot_id, line_id)`.** A given line's `line_id` (e.g. `"central"`) is consistent across every snapshot, it repeats every single time the pipeline runs, so it can't uniquely identify a row on its own. `snapshot_id` alone isn't enough either, since one snapshot produces ~11 rows (one per line). Only the *combination* of which line and which specific snapshot it came from is guaranteed unique, which is what a composite key enforces. `snapshot_id` is also a foreign key referencing `raw_snapshots(id)`, so every clean row can be traced back to the exact raw API response it was derived from.
 
 **Not every field from the API response was kept.** The raw JSON includes a lot of information alongside the useful fields. Some examples of deliberate omissions, based on inspecting real responses are:
-- `modeName` was dropped — every row in this dataset is `"tube"`, so it can never help distinguish or filter anything.
-- `created` and `modified` inside `lineStatuses` were dropped — both were consistently placeholder values (`"0001-01-01T00:00:00"`), not real timestamps.
+- `modeName` was dropped, every row in this dataset is `"tube"`, so it can never help distinguish or filter anything.
+- `created` and `modified` inside `lineStatuses` were dropped, both were consistently placeholder values (`"0001-01-01T00:00:00"`), not real timestamps.
 - `disruption.description` was dropped as redundant with `lineStatuses[0].reason`, which contains the same text.
-- `validityPeriods` (`fromDate`/`toDate`/`isNow`) was deliberately excluded from the clean table — it's a list nested inside each line status, and doesn't fit cleanly as flat columns without further design work.
+- `validityPeriods` (`fromDate`/`toDate`/`isNow`) was excluded from the clean table, it's a list nested inside each line status, and doesn't fit cleanly as flat columns without further design work.
 
 **Re-running the transform script never creates duplicates.** `transform_status.py` only processes snapshots whose `id` doesn't already appear in `clean_line_status`, so it's safe to run repeatedly without needing to track state separately or manually avoid re-processing.
 
@@ -60,7 +60,7 @@ python3 fetch_status.py     # polls the TfL API, stores one new raw snapshot
 python3 transform_status.py # transforms any new raw snapshots into clean rows
 ```
 
-`fetch_status.py` and `transform_status.py` are both designed to be run repeatedly — each call to `fetch_status.py` adds one new snapshot, and `transform_status.py` picks up whatever hasn't been processed yet.
+`fetch_status.py` and `transform_status.py` are both designed to be run repeatedly, each call to `fetch_status.py` adds one new snapshot, and `transform_status.py` picks up whatever hasn't been processed yet.
 
 ## What's next
 
