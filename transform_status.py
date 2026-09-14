@@ -19,6 +19,7 @@ Prerequisites:
 
 import psycopg2
 from dotenv import load_dotenv
+from transform_logic import extract_line_fields
 import os
 
 load_dotenv()
@@ -49,29 +50,16 @@ try:
         # raw_response is already a Python list of dicts, psycopg2
         # converts JSONB back automatically, no json.loads() needed.
         for line in raw_response:
-            line_id = line["id"]
-            line_name = line["name"]
-
-            # lineStatuses is itself a list, but TfL only ever returns
-            # one entry per line for this endpoint, we take the first.
-            status = line["lineStatuses"][0]
-            status_severity = status["statusSeverity"]
-            status_severity_description = status["statusSeverityDescription"]
-
-            # reason and category only exist in the JSON when there's an
-            # active disruption, so .get() is used instead of [], it
-            # returns None if the key is missing, instead of raising an
-            # error like [] would.
-            reason = status.get("reason")
-            category = status.get("disruption", {}).get("category")
+            fields = extract_line_fields(line)
 
             cur.execute("""
                 INSERT INTO clean_line_status
                     (snapshot_id, line_id, line_name, status_severity,
                      status_severity_description, reason, category)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (snapshot_id, line_id, line_name, status_severity,
-                  status_severity_description, reason, category))
+            """, (snapshot_id, fields["line_id"], fields["line_name"],
+                  fields["status_severity"], fields["status_severity_description"],
+                  fields["reason"], fields["category"]))
 
             rows_inserted += 1
 
