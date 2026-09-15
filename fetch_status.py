@@ -27,6 +27,7 @@ load_dotenv()
 
 tfl_api_key = os.getenv("TFL_API_KEY")
 db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST", "localhost")
 
 # Step 1: Call the TfL API
 url = "https://api.tfl.gov.uk/Line/Mode/tube/Status"
@@ -43,7 +44,7 @@ except requests.exceptions.RequestException as e:
 
 # Step 2: Connect to the database and insert the raw response
 conn = psycopg2.connect(
-    host="localhost",
+    host=db_host,
     port=5432,
     dbname="tfl_pipeline",
     user="postgres",

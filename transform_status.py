@@ -24,9 +24,10 @@ import os
 
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("DB_HOST", "localhost")
 
 conn = psycopg2.connect(
-    host="localhost",
+    host=db_host,
     port=5432,
     dbname="tfl_pipeline",
     user="postgres",

@@ -65,7 +65,6 @@ python3 transform_status.py # transforms any new raw snapshots into clean rows
 ## What's next
 
 This project is a work in progress. Planned next steps:
-- Basic automated tests around the transform logic
 - Scheduling `fetch_status.py` to run automatically (e.g. every 10–15 minutes) to build up meaningful historical data over time
 - Containerising the whole pipeline with Docker so it can be run without any local setup
 - Revisiting `validityPeriods` if a concrete need for that data emerges
