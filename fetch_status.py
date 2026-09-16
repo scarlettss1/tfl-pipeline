@@ -27,7 +27,7 @@ load_dotenv()
 
 tfl_api_key = os.getenv("TFL_API_KEY")
 db_password = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST", "localhost")
+db_host = os.getenv("TFL_DB_HOST", "localhost")
 
 # Step 1: Call the TfL API
 url = "https://api.tfl.gov.uk/Line/Mode/tube/Status"

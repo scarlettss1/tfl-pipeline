@@ -24,7 +24,7 @@ import os
 
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
-db_host = os.getenv("DB_HOST", "localhost")
+db_host = os.getenv("TFL_DB_HOST", "localhost")
 
 conn = psycopg2.connect(
     host=db_host,
