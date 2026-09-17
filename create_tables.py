@@ -26,11 +26,12 @@ import os
 # password never ends up committed to Git history.
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("TFL_DB_HOST", "localhost")
 
 # Unlike create_db.py, this script connects directly to 'tfl_pipeline',
 # the tables we're creating live inside that database, not 'postgres'.
 conn = psycopg2.connect(
-    host="localhost",
+    host=db_host,
     port=5432,
     dbname="tfl_pipeline",
     user="postgres",

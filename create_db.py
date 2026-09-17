@@ -21,12 +21,13 @@ from dotenv import load_dotenv
 # password never ends up committed to Git history.
 load_dotenv()
 db_password = os.getenv("DB_PASSWORD")
+db_host = os.getenv("TFL_DB_HOST", "localhost")
 
 # Connect to the default 'postgres' database first, a connection can't
 # create the database it's connected to, so this has to target a
 # different, already-existing one.
 conn = psycopg2.connect(
-    host="localhost",
+    host=db_host,
     port=5432,
     dbname="postgres",
     user="postgres",
