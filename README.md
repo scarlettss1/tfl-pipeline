@@ -88,6 +88,36 @@ pytest                       # runs the test suite
 
 `fetch_status.py` and `transform_status.py` are both designed to be run repeatedly, each call to `fetch_status.py` adds one new snapshot, and `transform_status.py` picks up whatever hasn't been processed yet. See **Scheduling** above for running them automatically via Airflow instead of manually.
 
+## Running it with Docker
+ 
+The pipeline is also packaged as a Docker image, so it can be run without installing Python or any dependencies locally. This still assumes a running Postgres container reachable over the network, it doesn't remove the need for a database, just the need for a local Python setup.
+ 
+**Prerequisites:**
+- Docker Desktop
+- A running Postgres container (see the `docker run` command in **Running it locally** above), on the same Docker network as this image will use
+- A `.env` file, same as above
+**Build the image:**
+```bash
+docker build -t tfl-pipeline .
+```
+ 
+**One-time setup** (creates the database and tables, replace `<network-name>` and `<postgres-container-name>` with your actual setup):
+```bash
+docker run --env-file .env --network <network-name> -e TFL_DB_HOST=<postgres-container-name> tfl-pipeline python3 create_db.py
+docker run --env-file .env --network <network-name> -e TFL_DB_HOST=<postgres-container-name> tfl-pipeline python3 create_tables.py
+```
+`create_db.py` is not safe to re-run (it will error with `DuplicateDatabase` if run twice), which is expected, this is a one-time step. `create_tables.py` is safe to re-run.
+ 
+**Run the pipeline** (fetch + transform, using the image's default command):
+```bash
+docker run --env-file .env --network <network-name> -e TFL_DB_HOST=<postgres-container-name> tfl-pipeline
+```
+ 
+A few things worth understanding about these commands:
+- `--network` puts this container on the same Docker network as the Postgres container, without it, they can't reach each other by name at all.
+- `-e TFL_DB_HOST=<postgres-container-name>` tells the scripts to connect to Postgres using its container name rather than `localhost`, since inside a container, `localhost` refers to the container itself, not the host machine or any other container.
+- `--env-file .env` passes `DB_PASSWORD` and `TFL_API_KEY` into the container at runtime. (`.env` is excluded via `.dockerignore`).
+
 ## What's next
 
 This project is a work in progress. Planned next steps:
